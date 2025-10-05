@@ -1,0 +1,19 @@
+# FastAPI and Server
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+pydantic==2.9.2
+transformers
+torch
+
+# HTTP Requests (for Hugging Face API)
+requests==2.32.3
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Optional but recommended for production
+python-multipart==0.0.12
+
+# Development (optional - comment out for production)
+# pytest==8.3.3
+# pytest-asyncio==0.24.0

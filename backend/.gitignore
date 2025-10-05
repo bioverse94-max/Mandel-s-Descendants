@@ -1,0 +1,33 @@
+# Environment variables (NEVER COMMIT THIS!)
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+
+# Data files (optional - if you don't want to commit the JSON)
+# data/nasa_bio_data.json
+
+# Model cache (not needed with HF API, but just in case)
+models/
+*.bin
+*.safetensors
