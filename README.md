@@ -1,4 +1,4 @@
-## 🚀Our project is live at -
+## 🚀Our search engine is live at -
 https://bioverse94-max.github.io/Mandel-s-Descendants/
 
 
