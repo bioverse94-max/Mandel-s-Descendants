@@ -69,7 +69,7 @@ export default function HomePage() {
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center opacity-40"
-          style={{ backgroundImage: "url(/earth.png)" }}
+          style={{ backgroundImage: `url(${import.meta.env.BASE_URL}earth.png)` }}
         />
 
         {/* Content Overlay */}

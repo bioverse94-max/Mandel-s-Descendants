@@ -1,9 +1,19 @@
+import { useState } from "react";
 import HomePage from "./components/HomePage";
+import LoadingScreen from "./components/LoadingScreen";
 
 function App() {
+  
+  const [loadingComplete, setLoadingComplete] = useState(false);
+
   return (
     <div>
-      <HomePage />
+      {!loadingComplete ? (
+        <LoadingScreen onComplete={() => setLoadingComplete(true)} />
+      ) : (
+        <HomePage />
+      )}
+
     </div>
   );
 }
