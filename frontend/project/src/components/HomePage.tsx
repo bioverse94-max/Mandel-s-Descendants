@@ -89,6 +89,9 @@ export default function HomePage() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch(); // Trigger search on Enter
+                }}
                 placeholder="Search for space biology research"
                 className="flex-1 px-6 py-4 rounded-full bg-gray-900/80 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 transition-colors backdrop-blur-sm"
               />

@@ -68,10 +68,9 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
               <div className="logo-glow"></div>
               <div className="w-48 h-48 rounded-full border-4 border-cyan-400 flex items-center justify-center bg-[#0a0e27] relative overflow-hidden">
                 <div className="scan-line"></div>
-                <img 
-                    src="/logo.png" 
-                    alt="Logo" 
-                    className="w-65 h-105 object-contain"
+                <div
+                  className="absolute inset-0 bg-cover bg-center opacity-40"
+                  style={{ backgroundImage: `url(${import.meta.env.BASE_URL}logo.png)` }}
                 />
                 </div>
               </div>
