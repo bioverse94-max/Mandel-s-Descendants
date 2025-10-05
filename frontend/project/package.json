@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://github.com/bioverse94-max/Mandel-s-Descendants",
+  "homepage": "https://bioverse94-max.github.io/Mandel-s-Descendants/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
