@@ -1,34 +1,110 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 from app.routes import search, recommend, describe, scibert
 from app.database import DATA
+from app.config import settings
+from app.monitoring import setup_monitoring, setup_logging, setup_elasticsearch
 import sys
-from dotenv import load_dotenv
-import os
+from typing import Callable
+import time
+import asyncio
+from cachetools import TTLCache
+import logging
 
-# Load environment variables from .env file
-load_dotenv()
+# Set up logging
+setup_logging()
+logger = logging.getLogger(__name__)
+
+# Initialize cache
+response_cache = TTLCache(maxsize=100, ttl=settings.CACHE_TTL)
+
+# Rate limiting middleware
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    def __init__(
+        self,
+        app,
+        calls_per_second: int = settings.RATE_LIMIT_PER_SECOND
+    ):
+        super().__init__(app)
+        self.calls_per_second = calls_per_second
+        self.request_timestamps = {}
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        client_ip = request.client.host
+        now = time.time()
+        
+        # Clean old timestamps
+        self.request_timestamps = {ip: ts for ip, ts in self.request_timestamps.items() 
+                                 if now - ts[-1] < 1}
+        
+        # Get timestamps for this IP
+        timestamps = self.request_timestamps.get(client_ip, [])
+        
+        # Remove timestamps older than 1 second
+        timestamps = [ts for ts in timestamps if now - ts < 1]
+        
+        if len(timestamps) >= self.calls_per_second:
+            return Response("Too many requests", status_code=429)
+        
+        timestamps.append(now)
+        self.request_timestamps[client_ip] = timestamps
+        
+        response = await call_next(request)
+        return response
 
 app = FastAPI(
-    title="BioVerse API",
+    title=settings.PROJECT_NAME,
     version="1.0",
     description="Backend for NASA BioVerse project 🚀",
 )
 
-# Enable CORS for frontend access
+# Add Gzip compression
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Add rate limiting
+app.add_middleware(RateLimitMiddleware)
+
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Update this when frontend is ready
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Set up monitoring
+setup_monitoring(app)
+
+# Initialize Elasticsearch
+es_client = setup_elasticsearch()
 
 # Register all route modules
 app.include_router(search.router)
 app.include_router(recommend.router)
 app.include_router(describe.router)
 app.include_router(scibert.router)
+
+# Add request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    
+    log_data = {
+        "method": request.method,
+        "path": request.url.path,
+        "status_code": response.status_code,
+        "process_time": process_time,
+        "client_ip": request.client.host
+    }
+    
+    logger.info("Request processed", extra=log_data)
+    return response
 
 
 @app.get("/")

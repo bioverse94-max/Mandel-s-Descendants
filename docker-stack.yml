@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  backend:
+    image: ${REGISTRY:-localhost}/bioverse-backend:${TAG:-latest}
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+      mode: replicated
+      placement:
+        constraints:
+          - node.role == worker
+    ports:
+      - "8000:8000"
+    environment:
+      - SCIBERT_URL=http://scibert:8080
+      - WORKERS=4
+      - MAX_REQUESTS=1000
+      - MAX_REQUESTS_JITTER=50
+      - PORT=8000
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+    networks:
+      - bioverse-net
+
+  scibert:
+    image: ${REGISTRY:-localhost}/bioverse-scibert:${TAG:-latest}
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+      mode: replicated
+      placement:
+        constraints:
+          - node.role == worker
+    ports:
+      - "8080:8080"
+    environment:
+      - MODEL_MAX_LENGTH=512
+      - BATCH_SIZE=32
+      - NUM_WORKERS=2
+    networks:
+      - bioverse-net
+
+  redis:
+    image: redis:alpine
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - bioverse-net
+
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.swarm=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - bioverse-net
+
+networks:
+  bioverse-net:
+    driver: overlay
+
+volumes:
+  redis-data:
