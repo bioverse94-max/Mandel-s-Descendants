@@ -46,11 +46,14 @@ def health_check():
     """
     Health check endpoint to verify API status and data availability.
     """
+    # Check summarizer availability: summarize_text uses HF API when token provided,
+    # otherwise it falls back to a truncation behavior. We report availability accordingly.
     try:
-        from app.utils.summarizer import summarizer
-        summarizer_status = "loaded" if summarizer else "unavailable (using fallback)"
-    except:
-        summarizer_status = "error"
+        from app.utils.summarizer import summarize_text
+        # If function exists, report loaded (but actual HF token may be missing)
+        summarizer_status = "available" if callable(summarize_text) else "unavailable"
+    except Exception:
+        summarizer_status = "unavailable"
     
     return {
         "status": "healthy",

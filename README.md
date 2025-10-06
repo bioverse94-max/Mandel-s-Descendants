@@ -73,6 +73,43 @@ Configured with `render.yaml`. On deploy, it runs:
 uvicorn app.main:app --host 0.0.0.0 --port 10000
 ```
 
+## ▶️ Run locally (quick)
+
+You can run the backend and frontend locally using docker-compose (recommended) or individually.
+
+- With docker-compose (starts backend on 8000 and scibert on 8080):
+
+```bash
+docker-compose up --build
+```
+
+- Run backend only (uvicorn):
+
+```bash
+# from repository root
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+- Run frontend (React):
+
+```bash
+cd frontend/project
+npm install
+# add .env with VITE_API_URL=http://127.0.0.1:8000
+npm run dev
+```
+
+Notes:
+- The backend Dockerfile exposes port 8000 and docker-compose maps 8000:8000.
+- Set `SCIBERT_URL` env var for the backend if running the SciBERT service elsewhere.
+
+## Notes about sample data and SciBERT
+
+- This repository now includes a small sample dataset at `data/nasa_bio_data.json` so the API endpoints return example results for local development.
+- The `/scibert/ner` endpoint proxies to an external SciBERT service configured by `SCIBERT_URL` (docker-compose maps the included `scibert-master` service to `http://scibert:8080`). If SciBERT or its Python dependencies are not available, the endpoint will return a safe placeholder message.
+
 Example backend URL:
 
 ```

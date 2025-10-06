@@ -5,13 +5,18 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [summary, setSummary] = useState("");
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [nerResult, setNerResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:10000";
+  // Use VITE_API_URL if provided, otherwise default to backend FastAPI port 8000
+  const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
   const handleSearch = async () => {
     if (!query) return;
     setLoading(true);
+    setError(null);
 
     try {
       // Call search endpoint
@@ -27,8 +32,48 @@ export default function HomePage() {
       setSummary(describeData.summary || "");
     } catch (err) {
       console.error("Error fetching:", err);
+      setError(String(err));
     }
 
+    setLoading(false);
+  };
+
+  const handleRecommend = async () => {
+    if (!query) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/recommend?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setRecommendations(data.results || []);
+    } catch (err) {
+      console.error('Recommend error', err);
+      setError(String(err));
+    }
+    setLoading(false);
+  };
+
+  const handleNer = async () => {
+    if (!query) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/scibert/ner`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: query })
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`NER error: ${res.status} ${text}`);
+      }
+      const data = await res.json();
+      setNerResult(data);
+    } catch (err) {
+      console.error('NER error', err);
+      setError(String(err));
+      setNerResult(null);
+    }
     setLoading(false);
   };
 
@@ -101,6 +146,18 @@ export default function HomePage() {
               >
                 {loading ? "Loading..." : "Search"}
               </button>
+              <button
+                onClick={handleRecommend}
+                className="px-6 py-4 rounded-full bg-indigo-500 text-white font-semibold hover:bg-indigo-600 transition-colors"
+              >
+                Recommend
+              </button>
+              <button
+                onClick={handleNer}
+                className="px-6 py-4 rounded-full bg-rose-500 text-white font-semibold hover:bg-rose-600 transition-colors"
+              >
+                NER
+              </button>
             </div>
           </div>
 
@@ -114,6 +171,31 @@ export default function HomePage() {
                 <h3 className="text-xl font-bold mb-2">AI Summary</h3>
                 <p className="text-gray-300">{summary}</p>
               </div>
+            )}
+
+            {/* Recommendations */}
+            {recommendations.length > 0 && (
+              <div className="mt-6 bg-gray-900/60 backdrop-blur-md rounded-2xl p-6 border border-gray-800 mb-8">
+                <h3 className="text-xl font-bold mb-2">Recommendations</h3>
+                {recommendations.map((r, i) => (
+                  <div key={i} className="text-gray-300">
+                    <h4 className="font-semibold">{r.title}</h4>
+                    <p className="text-gray-400">{r.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* NER Result */}
+            {nerResult && (
+              <div className="mt-6 bg-gray-900/60 backdrop-blur-md rounded-2xl p-6 border border-gray-800 mb-8">
+                <h3 className="text-xl font-bold mb-2">NER Result</h3>
+                <pre className="text-sm text-gray-300">{JSON.stringify(nerResult, null, 2)}</pre>
+              </div>
+            )}
+
+            {error && (
+              <div className="mt-6 text-rose-400">Error: {error}</div>
             )}
 
             {/* Search Results */}

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "ds1",
+    "title": "Microbial Growth on ISS",
+    "domain": "microbiology",
+    "description": "Study of microbial growth patterns in microgravity onboard the International Space Station.",
+    "keywords": ["microgravity", "microbes", "ISS"],
+    "data_url": "https://nasa.gov/ds1",
+    "data_type": "csv",
+    "release_date": "2020-03-10",
+    "authors": ["A. Researcher"],
+    "variables": ["growth_rate", "temperature"]
+  },
+  {
+    "id": "ds2",
+    "title": "Plant Development in Space",
+    "domain": "botany",
+    "description": "Observations of plant root growth and gene expression under reduced gravity conditions.",
+    "keywords": ["plants", "roots", "gene expression"],
+    "data_url": "https://nasa.gov/ds2",
+    "data_type": "json",
+    "release_date": "2019-11-05",
+    "authors": ["B. Botanist"],
+    "variables": ["root_length", "photosynthesis_rate"]
+  },
+  {
+    "id": "ds3",
+    "title": "Radiation Effects on DNA",
+    "domain": "genetics",
+    "description": "Examining mutations and repair mechanisms following space radiation exposure.",
+    "keywords": ["radiation", "DNA", "mutations"],
+    "data_url": "https://nasa.gov/ds3",
+    "data_type": "csv",
+    "release_date": "2018-07-22",
+    "authors": ["C. Geneticist"],
+    "variables": ["mutation_rate", "repair_enzyme_activity"]
+  }
+]
