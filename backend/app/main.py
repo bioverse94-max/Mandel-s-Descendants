@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import search, recommend, describe
+from app.routes import search, recommend, describe, scibert
 from app.database import DATA
 import sys
 from dotenv import load_dotenv
@@ -28,6 +28,7 @@ app.add_middleware(
 app.include_router(search.router)
 app.include_router(recommend.router)
 app.include_router(describe.router)
+app.include_router(scibert.router)
 
 
 @app.get("/")
